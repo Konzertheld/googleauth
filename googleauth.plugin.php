@@ -46,10 +46,10 @@ class GoogleAuth extends Plugin
 	 * Provide auth link to the theme
 	 * @param array Accepts values for overriding the global options redirect_uri and scope and additional state, a value that will be roundtripped through the Google servers until returned with the redirect URI
 	 */
-	public function theme_googleauth_link($paramarray = array())
+	public function theme_googleauth_link($theme, $paramarray = array())
 	{
 		$opts = Options::get_group( __CLASS__ );
-		$url = "<a href='https://accounts.google.com/o/oauth2/auth?";
+		$url = "https://accounts.google.com/o/oauth2/auth?";
 		
 		if(isset($paramarray['scope'])) {
 			$url .= "scope=" . $paramarray['scope'];
@@ -69,7 +69,7 @@ class GoogleAuth extends Plugin
 			$url .= "state=" . $paramarray['state'];
 		}
 		
-		$url .= "&response_type=code&client_id=" . $opts['client_id'] . "'>Click to auth (first fill in and save all fields!)</a>";
+		$url .= "&response_type=code&client_id=" . $opts['client_id'];
 		
 		return $url;
 	}
@@ -96,6 +96,30 @@ class GoogleAuth extends Plugin
 		
 		// Offer the token to plugins that want to do something with the authenticated user
 		Plugins::act('googleauth_token', $token);
+		
+		// Get user info. Wrap in try-catch because we don't know if the userinfo is available
+		try {
+			$request = new RemoteRequest("https://www.googleapis.com/oauth2/v1/userinfo?access_token=$token");
+			$request->execute();
+			if ( ! $request->executed() ) {
+				throw new XMLRPCException( 16 );
+			}
+			$json_response = $request->get_response_body();
+			$jsondata = json_decode($json_response);
+			
+			// The following is important, because it's part of the "socialauth" feature API
+			$userdata = array("id" => $jsondata->id, "name" => $jsondata->name, "email" => $jsondata->email);
+			if(isset($jsondata->picture)) {
+				$userdata["portrait_url"] = $jsondata->picture;
+			}
+			if(isset($jsondata->timezone)) {
+				$userdata["timezone"] = $jsondata->timezone;
+			}
+			// Pass the identification data to plugins
+			Plugins::act('socialauth_identified', 'google', $userdata);
+		} catch(Exception $e) {
+			// don't care if it fails, the only consequence is that action_social_auth will not be triggered, which is correct
+		}
 	}
 }
 ?>
