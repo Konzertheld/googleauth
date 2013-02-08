@@ -59,14 +59,14 @@ class GoogleAuth extends Plugin
 		}
 		
 		if(isset($paramarray['redirect_uri'])) {
-			$url .= "redirect_uri=" . $paramarray['redirect_uri'];
+			$url .= "&redirect_uri=" . $paramarray['redirect_uri'];
 		}
 		else {
-			$url .= "redirect_uri=" . $opts['redirect_uri'];
+			$url .= "&redirect_uri=" . $opts['redirect_uri'];
 		}
 		
 		if(isset($paramarray['state'])) {
-			$url .= "state=" . $paramarray['state'];
+			$url .= "&state=" . $paramarray['state'];
 		}
 		
 		$url .= "&response_type=code&client_id=" . $opts['client_id'];
