@@ -1,6 +1,8 @@
 <?php
 class GoogleAuth extends Plugin
 {
+	$service = 'google';
+	
 	/**
 	 * Outputs the "configure" button on the plugin page.
 	 */
@@ -116,7 +118,7 @@ class GoogleAuth extends Plugin
 				$userdata["timezone"] = $jsondata->timezone;
 			}
 			// Pass the identification data to plugins
-			Plugins::act('socialauth_identified', 'google', $userdata);
+			Plugins::act('socialauth_identified', $this->service, $userdata);
 		} catch(Exception $e) {
 			// don't care if it fails, the only consequence is that action_social_auth will not be triggered, which is correct
 		}
