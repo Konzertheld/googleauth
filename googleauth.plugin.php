@@ -40,7 +40,7 @@ class GoogleAuth extends Plugin
 	 */
 	public function filter_rewrite_rules($rules)
     {
-		$rules[] = RewriteRule::create_url_rule('"oauth2callback"', 'PluginHandler', 'oauth2callback');
+		$rules[] = RewriteRule::create_url_rule('"oauth2callback"', 'PluginHandler', 'google_oauth_callback');
         return $rules;
     }
 	
@@ -91,7 +91,7 @@ class GoogleAuth extends Plugin
 	/*
 	 * Handle the authentication result
 	 */
-	public function action_plugin_act_oauth2callback($handler)
+	public function action_plugin_act_google_oauth_callback($handler)
 	{
 		$code = $_GET['code'];
 		$opts = Options::get_group(__CLASS__);
