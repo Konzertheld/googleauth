@@ -1,7 +1,7 @@
 <?php
 class GoogleAuth extends Plugin
 {
-	$service = 'google';
+	private $service = 'google';
 	
 	/**
 	 * Outputs the "configure" button on the plugin page.
