@@ -45,35 +45,47 @@ class GoogleAuth extends Plugin
     }
 	
 	/*
+	 * Add Google to the list of social services providing the socialauth feature
+	 */
+	public function filter_socialauth_services($services = array())
+	{
+		$services[] = $this->service;
+		return $services;
+	}
+	
+	/*
 	 * Provide auth link to the theme
+	 * @param string $service The service / social network the link is requested for.
 	 * @param array Accepts values for overriding the global options redirect_uri and scope and additional state, a value that will be roundtripped through the Google servers until returned with the redirect URI
 	 */
-	public function theme_googleauth_link($theme, $paramarray = array())
+	public function theme_socialauth_link($theme, $service, $paramarray = array())
 	{
-		$opts = Options::get_group( __CLASS__ );
-		$url = "https://accounts.google.com/o/oauth2/auth?";
-		
-		if(isset($paramarray['scope'])) {
-			$url .= "scope=" . $paramarray['scope'];
+		if($service == $this->service) {
+			$opts = Options::get_group( __CLASS__ );
+			$url = "https://accounts.google.com/o/oauth2/auth?";
+			
+			if(isset($paramarray['scope'])) {
+				$url .= "scope=" . $paramarray['scope'];
+			}
+			else {
+				$url .= "scope=" . $opts['scope'];
+			}
+			
+			if(isset($paramarray['redirect_uri'])) {
+				$url .= "&redirect_uri=" . $paramarray['redirect_uri'];
+			}
+			else {
+				$url .= "&redirect_uri=" . $opts['redirect_uri'];
+			}
+			
+			if(isset($paramarray['state'])) {
+				$url .= "&state=" . $paramarray['state'];
+			}
+			
+			$url .= "&response_type=code&client_id=" . $opts['client_id'];
+			
+			return $url;
 		}
-		else {
-			$url .= "scope=" . $opts['scope'];
-		}
-		
-		if(isset($paramarray['redirect_uri'])) {
-			$url .= "&redirect_uri=" . $paramarray['redirect_uri'];
-		}
-		else {
-			$url .= "&redirect_uri=" . $opts['redirect_uri'];
-		}
-		
-		if(isset($paramarray['state'])) {
-			$url .= "&state=" . $paramarray['state'];
-		}
-		
-		$url .= "&response_type=code&client_id=" . $opts['client_id'];
-		
-		return $url;
 	}
 	
 	/*
