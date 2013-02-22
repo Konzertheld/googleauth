@@ -1,4 +1,6 @@
 <?php
+namespace Habari;
+
 class GoogleAuth extends Plugin
 {
 	private $service = 'Google';
@@ -60,8 +62,10 @@ class GoogleAuth extends Plugin
 	 */
 	public function theme_socialauth_link($theme, $service, $paramarray = array())
 	{
+		// REFACTOR: Do something to avoid output of incomplete urls
 		if($service == $this->service) {
 			$opts = Options::get_group( __CLASS__ );
+			
 			$url = "https://accounts.google.com/o/oauth2/auth?";
 			
 			if(isset($paramarray['scope'])) {
@@ -94,6 +98,7 @@ class GoogleAuth extends Plugin
 	public function action_plugin_act_google_oauth_callback($handler)
 	{
 		$code = $_GET['code'];
+		$state = $_GET['state'];
 		$opts = Options::get_group(__CLASS__);
 		
 		// Exchange code for token
@@ -130,7 +135,7 @@ class GoogleAuth extends Plugin
 				$userdata["timezone"] = $jsondata->timezone;
 			}
 			// Pass the identification data to plugins
-			Plugins::act('socialauth_identified', $this->service, $userdata);
+			Plugins::act('socialauth_identified', $this->service, $userdata, $state);
 		} catch(Exception $e) {
 			// don't care if it fails, the only consequence is that action_social_auth will not be triggered, which is correct
 		}
